@@ -27,6 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { LogoutButton } from "@/components/logout-button";
 
 type NavItem = {
   label: string;
@@ -58,12 +59,17 @@ const navItems: NavItem[] = [
 ];
 
 export function SidebarNavigation() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [open, setOpen] = useState(false);
   const { user, logoutMutation } = useAuth();
   
   const handleLogout = () => {
-    logoutMutation.mutate();
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        // Redirect to auth page immediately after successful logout
+        setLocation("/auth");
+      }
+    });
   };
 
   const MobileNav = () => (
@@ -120,15 +126,11 @@ export function SidebarNavigation() {
                   <p className="text-sm font-medium text-gray-700">{user?.username || 'Guest'}</p>
                 </div>
               </div>
-              <Button 
+              <LogoutButton 
                 variant="ghost" 
                 size="sm" 
-                onClick={handleLogout}
                 className="text-gray-600 hover:text-gray-900"
-              >
-                <LogOut className="h-4 w-4 mr-1" />
-                <span>Logout</span>
-              </Button>
+              />
             </div>
           </div>
         </div>
@@ -212,9 +214,8 @@ export function SidebarNavigation() {
                 </DropdownMenuItem>
               </Link>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
+              <DropdownMenuItem asChild>
+                <LogoutButton variant="ghost" />
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
