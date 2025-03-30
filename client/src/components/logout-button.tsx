@@ -1,6 +1,4 @@
 import { useAuth } from "@/hooks/use-auth";
-import { Redirect } from "wouter";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 
@@ -18,19 +16,19 @@ export function LogoutButton({
   iconOnly = false
 }: LogoutButtonProps) {
   const { logoutMutation } = useAuth();
-  const [isLoggedOut, setIsLoggedOut] = useState(false);
 
-  const handleLogout = () => {
-    logoutMutation.mutate(undefined, {
-      onSuccess: () => {
-        setIsLoggedOut(true);
-      }
-    });
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    try {
+      await logoutMutation.mutateAsync();
+      
+      // After successful logout, force a page reload to the auth page
+      window.location.href = "/auth";
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
-
-  if (isLoggedOut) {
-    return <Redirect to="/auth" />;
-  }
 
   return (
     <Button

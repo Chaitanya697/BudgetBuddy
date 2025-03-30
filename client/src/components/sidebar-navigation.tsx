@@ -63,13 +63,17 @@ export function SidebarNavigation() {
   const [open, setOpen] = useState(false);
   const { user, logoutMutation } = useAuth();
   
-  const handleLogout = () => {
-    logoutMutation.mutate(undefined, {
-      onSuccess: () => {
-        // Redirect to auth page immediately after successful logout
-        setLocation("/auth");
-      }
-    });
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    try {
+      await logoutMutation.mutateAsync();
+      
+      // After successful logout, force a page reload to the auth page
+      window.location.href = "/auth";
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   const MobileNav = () => (
@@ -126,11 +130,16 @@ export function SidebarNavigation() {
                   <p className="text-sm font-medium text-gray-700">{user?.username || 'Guest'}</p>
                 </div>
               </div>
-              <LogoutButton 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
                 className="text-gray-600 hover:text-gray-900"
-              />
+                disabled={logoutMutation.isPending}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                <span>Logout</span>
+              </Button>
             </div>
           </div>
         </div>
@@ -214,8 +223,9 @@ export function SidebarNavigation() {
                 </DropdownMenuItem>
               </Link>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <LogoutButton variant="ghost" />
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
