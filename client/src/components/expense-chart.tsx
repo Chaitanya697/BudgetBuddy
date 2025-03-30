@@ -15,17 +15,20 @@ export function ExpenseChart() {
   const chartInstance = useRef<any>(null);
   
   useEffect(() => {
-    if (isSummaryLoading || !summary?.expenseBreakdown) return;
-    
-    // Clean up any existing chart
+    // Always clean up existing chart first 
     if (chartInstance.current) {
       chartInstance.current.destroy();
+      chartInstance.current = null;
     }
     
-    if (!chartRef.current) return;
+    // Only proceed with creating a new chart if we have data
+    if (isSummaryLoading || !summary?.expenseBreakdown || !chartRef.current) return;
     
     const ctx = chartRef.current.getContext('2d');
     if (!ctx) return;
+    
+    // If there's no expense data, don't create a chart
+    if (summary.expenseBreakdown.length === 0) return;
     
     const sortedExpenses = [...summary.expenseBreakdown]
       .sort((a, b) => b.amount - a.amount);
@@ -37,9 +40,21 @@ export function ExpenseChart() {
       return category.color || COLORS.chart[index % COLORS.chart.length];
     });
     
+    let chartCreated = false;
+    
+    // Dynamically import Chart.js to reduce initial load time
     import('chart.js').then(({ Chart, ArcElement, Tooltip, Legend }) => {
-      Chart.register(ArcElement, Tooltip, Legend);
+      // Make sure the component is still mounted
+      if (!chartRef.current) return;
       
+      // Register components only once
+      Chart.register(ArcElement, Tooltip, Legend);
+
+      // Create a unique ID for this chart instance
+      const chartId = `expense-chart-${Date.now()}`;
+      chartRef.current.id = chartId;
+      
+      // Create new chart
       chartInstance.current = new Chart(ctx, {
         type: 'pie',
         data: {
@@ -69,12 +84,17 @@ export function ExpenseChart() {
           }
         }
       });
+      
+      chartCreated = true;
+    }).catch(error => {
+      console.error("Failed to load Chart.js", error);
     });
     
-    // Clean up chart on unmount
+    // Clean up chart on unmount or when effect re-runs
     return () => {
       if (chartInstance.current) {
         chartInstance.current.destroy();
+        chartInstance.current = null;
       }
     };
   }, [summary, isSummaryLoading, period]);
