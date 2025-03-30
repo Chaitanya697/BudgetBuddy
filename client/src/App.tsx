@@ -10,7 +10,7 @@ import { ProtectedRoute } from "./lib/protected-route";
 // Use ProtectedRoute for authenticated routes
 function App() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background text-foreground">
       <Switch>
         <Route path="/auth">
           <AuthPage />

@@ -8,12 +8,23 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
+import { useTheme } from "@/hooks/use-theme";
 
 export default function Settings() {
   const { toast } = useToast();
   const { user } = useAuth();
-  const [darkMode, setDarkMode] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [darkMode, setDarkMode] = useState(theme === 'dark');
   const [emailNotifications, setEmailNotifications] = useState(true);
+
+  const handleDarkModeToggle = (checked: boolean) => {
+    setDarkMode(checked);
+    setTheme(checked ? 'dark' : 'light');
+    toast({
+      title: checked ? "Dark mode enabled" : "Light mode enabled",
+      description: "Your theme preference has been updated",
+    });
+  };
 
   const handleSaveSettings = () => {
     toast({
@@ -69,7 +80,7 @@ export default function Settings() {
                   <Switch 
                     id="dark-mode" 
                     checked={darkMode} 
-                    onCheckedChange={setDarkMode} 
+                    onCheckedChange={handleDarkModeToggle} 
                   />
                 </div>
                 
