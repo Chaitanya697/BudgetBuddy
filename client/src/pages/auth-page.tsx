@@ -34,7 +34,7 @@ export default function AuthPage() {
   const { toast } = useToast();
   
   // Direct query instead of using useAuth hook
-  const { data: user } = useQuery<User | null>({
+  const { data: user, refetch } = useQuery<User | null>({
     queryKey: ["/api/user"],
     queryFn: getQueryFn({ on401: "returnNull" }),
   });
@@ -51,9 +51,14 @@ export default function AuthPage() {
         title: "Login successful",
         description: `Welcome back, ${user.username}!`,
       });
-      setLocation("/");
+      // Force refresh the user data from the server
+      refetch().then(() => {
+        // Only redirect after confirming we have user data
+        setTimeout(() => setLocation("/"), 200);
+      });
     },
     onError: (error: Error) => {
+      console.error("Login error:", error);
       toast({
         title: "Login failed",
         description: error.message || "Invalid username or password",
@@ -73,9 +78,14 @@ export default function AuthPage() {
         title: "Registration successful",
         description: `Welcome, ${user.username}!`,
       });
-      setLocation("/");
+      // Force refresh the user data from the server
+      refetch().then(() => {
+        // Only redirect after confirming we have user data
+        setTimeout(() => setLocation("/"), 200);
+      });
     },
     onError: (error: Error) => {
+      console.error("Registration error:", error);
       toast({
         title: "Registration failed",
         description: error.message || "Could not create account",
