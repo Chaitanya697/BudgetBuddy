@@ -25,7 +25,7 @@ export function ProtectedRoute({
       {() => {
         if (isLoading) {
           return (
-            <div className="flex items-center justify-center min-h-screen">
+            <div className="flex items-center justify-center min-h-screen bg-background">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           );
@@ -33,8 +33,15 @@ export function ProtectedRoute({
         
         if (!user) {
           // Redirect to auth page if not authenticated
-          setLocation("/auth");
-          return null;
+          setTimeout(() => setLocation("/auth"), 0);
+          return (
+            <div className="flex items-center justify-center min-h-screen bg-background text-foreground">
+              <div className="text-center">
+                <p>Not authenticated. Redirecting to login...</p>
+                <Loader2 className="h-6 w-6 animate-spin mx-auto mt-2 text-primary" />
+              </div>
+            </div>
+          );
         }
         
         return <Component />;
