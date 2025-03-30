@@ -1,16 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useTransactions } from "@/hooks/use-transactions";
+import { useTransactions, PeriodType } from "@/hooks/use-transactions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCategoryById } from "@/lib/categories";
 import { COLORS } from "@/lib/utils";
 
-type PeriodOption = "thisMonth" | "lastMonth" | "last3Months";
+interface ExpenseChartProps {
+  period: PeriodType;
+}
 
-export function ExpenseChart() {
-  const { summary, isSummaryLoading } = useTransactions();
-  const [period, setPeriod] = useState<PeriodOption>("thisMonth");
+export function ExpenseChart({ period }: ExpenseChartProps) {
+  const { summary, isSummaryLoading } = useTransactions(period);
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstance = useRef<any>(null);
   
@@ -39,8 +39,6 @@ export function ExpenseChart() {
       const category = getCategoryById(item.category);
       return category.color || COLORS.chart[index % COLORS.chart.length];
     });
-    
-    let chartCreated = false;
     
     // Dynamically import Chart.js to reduce initial load time
     import('chart.js').then(({ Chart, ArcElement, Tooltip, Legend }) => {
@@ -84,8 +82,6 @@ export function ExpenseChart() {
           }
         }
       });
-      
-      chartCreated = true;
     }).catch(error => {
       console.error("Failed to load Chart.js", error);
     });
@@ -105,7 +101,6 @@ export function ExpenseChart() {
         <CardHeader className="pb-2">
           <div className="flex justify-between items-center">
             <Skeleton className="h-6 w-40" />
-            <Skeleton className="h-10 w-32" />
           </div>
         </CardHeader>
         <CardContent>
@@ -137,19 +132,6 @@ export function ExpenseChart() {
       <CardHeader className="pb-2">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="text-lg font-semibold text-gray-800">Expense Breakdown</CardTitle>
-          <Select
-            value={period}
-            onValueChange={(value) => setPeriod(value as PeriodOption)}
-          >
-            <SelectTrigger className="w-[160px] h-8 text-sm mt-2 sm:mt-0">
-              <SelectValue placeholder="Select period" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="thisMonth">This Month</SelectItem>
-              <SelectItem value="lastMonth">Last Month</SelectItem>
-              <SelectItem value="last3Months">Last 3 Months</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
       </CardHeader>
       <CardContent>

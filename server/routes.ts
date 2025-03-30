@@ -1,10 +1,50 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertTransactionSchema } from "@shared/schema";
+import { insertTransactionSchema, Transaction } from "@shared/schema";
 import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { setupAuth } from "./auth";
+
+// Function to filter transactions based on period
+function filterTransactionsByPeriod(transactions: Transaction[], period: string): Transaction[] {
+  const now = new Date();
+  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const startOfThisYear = new Date(now.getFullYear(), 0, 1);
+  const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+  
+  let startDate: Date;
+  
+  switch (period) {
+    case 'thisMonth':
+      startDate = startOfThisMonth;
+      break;
+    case 'lastMonth':
+      startDate = startOfLastMonth;
+      const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+      return transactions.filter(t => {
+        const date = new Date(t.date);
+        return date >= startDate && date <= endOfLastMonth;
+      });
+    case 'last3Months':
+      startDate = threeMonthsAgo;
+      break;
+    case 'thisYear':
+      startDate = startOfThisYear;
+      break;
+    case 'custom':
+      // Custom period not implemented yet, default to all transactions
+      return transactions;
+    default:
+      startDate = startOfThisMonth; // Default to this month
+  }
+  
+  return transactions.filter(t => {
+    const date = new Date(t.date);
+    return date >= startDate;
+  });
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
@@ -15,8 +55,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(401).json({ message: "Unauthorized" });
     }
     
+    const period = req.query.period as string || 'thisMonth';
     const transactions = await storage.getTransactions(req.user.id);
-    res.json(transactions);
+    
+    // Filter transactions based on period
+    const filteredTransactions = filterTransactionsByPeriod(transactions, period);
+    
+    res.json(filteredTransactions);
   });
 
   app.get("/api/transactions/:id", async (req, res) => {

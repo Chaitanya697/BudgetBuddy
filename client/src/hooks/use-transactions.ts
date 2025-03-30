@@ -3,16 +3,34 @@ import { apiRequest } from "@/lib/queryClient";
 import { InsertTransaction, Transaction } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 
-export function useTransactions() {
+export type PeriodType = "thisMonth" | "lastMonth" | "last3Months" | "thisYear" | "custom";
+
+export function useTransactions(period: PeriodType = "thisMonth") {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   const { data: transactions = [], isLoading, error } = useQuery<Transaction[]>({
-    queryKey: ['/api/transactions'],
+    queryKey: ['/api/transactions', period],
+    queryFn: async () => {
+      const params = new URLSearchParams({ period });
+      const res = await fetch(`/api/transactions?${params.toString()}`);
+      if (!res.ok) {
+        throw new Error('Failed to fetch transactions');
+      }
+      return res.json();
+    }
   });
 
   const { data: summary, isLoading: isSummaryLoading } = useQuery({
-    queryKey: ['/api/summary'],
+    queryKey: ['/api/summary', period],
+    queryFn: async () => {
+      const params = new URLSearchParams({ period });
+      const res = await fetch(`/api/summary?${params.toString()}`);
+      if (!res.ok) {
+        throw new Error('Failed to fetch summary');
+      }
+      return res.json();
+    }
   });
 
   const addTransaction = useMutation({

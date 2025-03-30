@@ -7,7 +7,7 @@ import {
   ArrowUpDown
 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { useTransactions } from "@/hooks/use-transactions";
+import { useTransactions, PeriodType } from "@/hooks/use-transactions";
 import { Transaction } from "@shared/schema";
 import { getCategoryById } from "@/lib/categories";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -37,8 +37,12 @@ import {
 
 type FilterOption = "all" | "income" | "expense";
 
-export function TransactionHistory() {
-  const { transactions, isLoading, deleteTransaction } = useTransactions();
+interface TransactionHistoryProps {
+  period: PeriodType;
+}
+
+export function TransactionHistory({ period }: TransactionHistoryProps) {
+  const { transactions, isLoading, deleteTransaction } = useTransactions(period);
   const [filter, setFilter] = useState<FilterOption>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [transactionToDelete, setTransactionToDelete] = useState<number | null>(null);
@@ -100,6 +104,28 @@ export function TransactionHistory() {
     setTransactionToDelete(null);
   };
   
+  // Generate appropriate period text for title
+  let periodText = "";
+  switch(period) {
+    case "thisMonth":
+      periodText = "This Month";
+      break;
+    case "lastMonth":
+      periodText = "Last Month";
+      break;
+    case "last3Months":
+      periodText = "Last 3 Months";
+      break;
+    case "thisYear":
+      periodText = "This Year";
+      break;
+    case "custom":
+      periodText = "Custom Period";
+      break;
+    default:
+      periodText = "";
+  }
+  
   if (isLoading) {
     return (
       <Card className="shadow-sm border border-gray-200">
@@ -156,7 +182,7 @@ export function TransactionHistory() {
       <CardHeader className="pb-2 border-b border-gray-200">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="text-lg font-semibold text-gray-800 mb-2 sm:mb-0">
-            Recent Transactions
+            {periodText ? `Transactions (${periodText})` : "Recent Transactions"}
           </CardTitle>
           
           <div className="flex flex-wrap gap-2">
@@ -340,7 +366,10 @@ function TransactionRow({
         {formatDate(transaction.date)}
       </TableCell>
       <TableCell className="whitespace-nowrap">
-        <Badge variant={transaction.type === 'income' ? 'success' : 'destructive'} className="font-normal">
+        <Badge 
+          variant={transaction.type === 'income' ? 'default' : 'destructive'} 
+          className={transaction.type === 'income' ? 'bg-green-500 hover:bg-green-600 font-normal' : 'font-normal'}
+        >
           {category.label}
         </Badge>
       </TableCell>

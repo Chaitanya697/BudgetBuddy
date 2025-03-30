@@ -1,4 +1,4 @@
-import { useTransactions } from "@/hooks/use-transactions";
+import { useTransactions, PeriodType } from "@/hooks/use-transactions";
 import { formatCurrency } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,8 +10,12 @@ import {
   ArrowUp
 } from "lucide-react";
 
-export function SummaryCards() {
-  const { summary, isSummaryLoading } = useTransactions();
+interface SummaryCardsProps {
+  period: PeriodType;
+}
+
+export function SummaryCards({ period }: SummaryCardsProps) {
+  const { summary, isSummaryLoading } = useTransactions(period);
 
   if (isSummaryLoading) {
     return (
@@ -37,6 +41,28 @@ export function SummaryCards() {
   const expenses = summary?.expenses || 0;
   const savingsRate = summary?.savingsRate || 0;
 
+  // Generate appropriate period text
+  let periodText = "";
+  switch(period) {
+    case "thisMonth":
+      periodText = "This Month";
+      break;
+    case "lastMonth":
+      periodText = "Last Month";
+      break;
+    case "last3Months":
+      periodText = "Last 3 Months";
+      break;
+    case "thisYear":
+      periodText = "This Year";
+      break;
+    case "custom":
+      periodText = "Custom Period";
+      break;
+    default:
+      periodText = "Current Period";
+  }
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       {/* Balance Card */}
@@ -47,7 +73,7 @@ export function SummaryCards() {
             <WalletCards className="h-5 w-5 text-primary" />
           </div>
           <p className="text-2xl font-semibold text-gray-800">{formatCurrency(balance)}</p>
-          <div className="text-xs text-gray-500 mt-1">Updated just now</div>
+          <div className="text-xs text-gray-500 mt-1">{periodText}</div>
         </CardContent>
       </Card>
       
@@ -61,7 +87,7 @@ export function SummaryCards() {
           <p className="text-2xl font-semibold text-green-600">{formatCurrency(income)}</p>
           <div className="text-xs flex items-center text-green-600 mt-1">
             <ArrowUp className="mr-1 h-3 w-3" />
-            <span>Updated based on transactions</span>
+            <span>{periodText}</span>
           </div>
         </CardContent>
       </Card>
@@ -76,7 +102,7 @@ export function SummaryCards() {
           <p className="text-2xl font-semibold text-rose-600">{formatCurrency(expenses)}</p>
           <div className="text-xs flex items-center text-rose-600 mt-1">
             <ArrowUp className="mr-1 h-3 w-3" />
-            <span>Updated based on transactions</span>
+            <span>{periodText}</span>
           </div>
         </CardContent>
       </Card>

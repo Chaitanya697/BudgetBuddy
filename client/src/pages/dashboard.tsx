@@ -4,6 +4,7 @@ import { SummaryCards } from "@/components/summary-cards";
 import { AddTransactionForm } from "@/components/add-transaction-form";
 import { ExpenseChart } from "@/components/expense-chart";
 import { TransactionHistory } from "@/components/transaction-history";
+import { PeriodType } from "@/hooks/use-transactions";
 import { 
   Select, 
   SelectContent, 
@@ -15,7 +16,7 @@ import {
 // The ProtectedRoute component now handles authentication
 // so Dashboard can focus purely on rendering the dashboard UI
 export default function Dashboard() {
-  const [period, setPeriod] = useState("thisMonth");
+  const [period, setPeriod] = useState<PeriodType>("thisMonth");
   
   // Main dashboard UI once authenticated
   return (
@@ -29,7 +30,7 @@ export default function Dashboard() {
             
             <div className="flex items-center space-x-3">
               <span className="text-sm text-gray-500">Period:</span>
-              <Select value={period} onValueChange={setPeriod}>
+              <Select value={period} onValueChange={(value) => setPeriod(value as PeriodType)}>
                 <SelectTrigger className="bg-white border border-gray-300 text-gray-700 rounded-md text-sm h-9 w-[180px]">
                   <SelectValue placeholder="Select period" />
                 </SelectTrigger>
@@ -44,16 +45,16 @@ export default function Dashboard() {
             </div>
           </div>
           
-          <SummaryCards />
+          <SummaryCards period={period} />
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1 space-y-6">
               <AddTransactionForm />
-              <ExpenseChart />
+              <ExpenseChart period={period} />
             </div>
             
             <div className="lg:col-span-2">
-              <TransactionHistory />
+              <TransactionHistory period={period} />
             </div>
           </div>
         </div>
