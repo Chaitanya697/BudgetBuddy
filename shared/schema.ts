@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, doublePrecision } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, doublePrecision } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -18,15 +18,14 @@ export const transactions = pgTable("transactions", {
   userId: integer("user_id").notNull(),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+// Schema for validating user input when creating a new user
+export const insertUserSchema = z.object({
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-export const insertTransactionSchema = createInsertSchema(transactions).omit({
-  id: true,
-  userId: true,
-}).extend({
+// Schema for validating transaction input
+export const insertTransactionSchema = z.object({
   amount: z.number().positive("Amount must be a positive number"),
   type: z.enum(["income", "expense"], {
     required_error: "Type is required",
