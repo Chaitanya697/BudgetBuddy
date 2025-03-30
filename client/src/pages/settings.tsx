@@ -8,23 +8,11 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { useTheme } from "@/hooks/use-theme";
 
 export default function Settings() {
   const { toast } = useToast();
   const { user } = useAuth();
-  const { theme, setTheme } = useTheme();
-  const [darkMode, setDarkMode] = useState(theme === 'dark');
   const [emailNotifications, setEmailNotifications] = useState(true);
-
-  const handleDarkModeToggle = (checked: boolean) => {
-    setDarkMode(checked);
-    setTheme(checked ? 'dark' : 'light');
-    toast({
-      title: checked ? "Dark mode enabled" : "Light mode enabled",
-      description: "Your theme preference has been updated",
-    });
-  };
 
   const handleSaveSettings = () => {
     toast({
@@ -34,7 +22,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-background">
       <SidebarNavigation />
       <main className="flex-1 p-6">
         <div className="mb-8">
@@ -72,18 +60,6 @@ export default function Settings() {
             <Separator />
             <CardContent className="pt-6">
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="dark-mode">Dark Mode</Label>
-                    <p className="text-sm text-muted-foreground">Enable dark theme</p>
-                  </div>
-                  <Switch 
-                    id="dark-mode" 
-                    checked={darkMode} 
-                    onCheckedChange={handleDarkModeToggle} 
-                  />
-                </div>
-                
                 <div className="flex items-center justify-between">
                   <div>
                     <Label htmlFor="notifications">Email Notifications</Label>
