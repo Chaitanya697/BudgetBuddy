@@ -69,7 +69,10 @@ export function AddTransactionForm() {
   const isPending = addTransaction.isPending;
 
   return (
-    <Card>
+    <Card className="relative overflow-hidden">
+      <div className="absolute right-3 top-3 w-10 h-10 opacity-10">
+        <img src="/attached_assets/image_1743321165731.png" alt="" className="w-full h-full" />
+      </div>
       <CardHeader>
         <CardTitle className="text-lg">Add Transaction</CardTitle>
       </CardHeader>
