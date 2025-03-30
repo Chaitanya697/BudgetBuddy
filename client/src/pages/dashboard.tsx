@@ -12,9 +12,12 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 
+// The ProtectedRoute component now handles authentication
+// so Dashboard can focus purely on rendering the dashboard UI
 export default function Dashboard() {
   const [period, setPeriod] = useState("thisMonth");
   
+  // Main dashboard UI once authenticated
   return (
     <div className="flex flex-col md:flex-row h-screen overflow-hidden bg-gray-50">
       <SidebarNavigation />

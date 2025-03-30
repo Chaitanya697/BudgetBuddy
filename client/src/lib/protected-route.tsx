@@ -1,19 +1,28 @@
-import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
-import { Redirect, Route } from "wouter";
+import { Route, useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import { getQueryFn } from "./queryClient";
+import { User } from "@shared/schema";
 
+// Simplest approach - don't use the useAuth hook in this component
+// to avoid dependency issues. Instead, directly query the user.
 export function ProtectedRoute({
   path,
   component: Component,
 }: {
   path: string;
-  component: () => React.JSX.Element;
+  component: React.ComponentType;
 }) {
+  const [, setLocation] = useLocation();
+  
+  const { data: user, isLoading } = useQuery<User | null>({
+    queryKey: ["/api/user"],
+    queryFn: getQueryFn({ on401: "returnNull" }),
+  });
+  
   return (
     <Route path={path}>
       {() => {
-        const { user, isLoading } = useAuth();
-
         if (isLoading) {
           return (
             <div className="flex items-center justify-center min-h-screen">
@@ -21,11 +30,13 @@ export function ProtectedRoute({
             </div>
           );
         }
-
+        
         if (!user) {
-          return <Redirect to="/auth" />;
+          // Redirect to auth page if not authenticated
+          setLocation("/auth");
+          return null;
         }
-
+        
         return <Component />;
       }}
     </Route>

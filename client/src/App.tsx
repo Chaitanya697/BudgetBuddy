@@ -4,19 +4,22 @@ import Dashboard from "@/pages/dashboard";
 import AuthPage from "@/pages/auth-page";
 import { ProtectedRoute } from "./lib/protected-route";
 
-function Router() {
+// Use ProtectedRoute for authenticated routes
+function App() {
   return (
     <Switch>
-      <ProtectedRoute path="/" component={Dashboard} />
-      <Route path="/auth" component={AuthPage} />
-      {/* Fallback to 404 */}
-      <Route component={NotFound} />
+      <Route path="/auth">
+        <AuthPage />
+      </Route>
+      <ProtectedRoute 
+        path="/" 
+        component={Dashboard} 
+      />
+      <Route>
+        <NotFound />
+      </Route>
     </Switch>
   );
-}
-
-function App() {
-  return <Router />;
 }
 
 export default App;
