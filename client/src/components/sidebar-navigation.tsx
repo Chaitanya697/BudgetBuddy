@@ -6,7 +6,8 @@ import {
   PieChart, 
   Settings, 
   Menu, 
-  User 
+  User,
+  LogOut 
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { 
@@ -17,6 +18,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type NavItem = {
   label: string;
@@ -50,6 +60,11 @@ const navItems: NavItem[] = [
 export function SidebarNavigation() {
   const [location] = useLocation();
   const [open, setOpen] = useState(false);
+  const { user, logoutMutation } = useAuth();
+  
+  const handleLogout = () => {
+    logoutMutation.mutate();
+  };
 
   const MobileNav = () => (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -96,14 +111,24 @@ export function SidebarNavigation() {
           </nav>
           <Separator className="my-2" />
           <div className="p-3">
-            <div className="flex items-center">
-              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
-                <User className="h-4 w-4" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
+                  <User className="h-4 w-4" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-700">{user?.username || 'Guest'}</p>
+                </div>
               </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-700">User</p>
-                <p className="text-xs text-gray-500">user@example.com</p>
-              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleLogout}
+                className="text-gray-600 hover:text-gray-900"
+              >
+                <LogOut className="h-4 w-4 mr-1" />
+                <span>Logout</span>
+              </Button>
             </div>
           </div>
         </div>
@@ -152,15 +177,47 @@ export function SidebarNavigation() {
         </nav>
         
         <div className="p-4 border-t border-gray-200">
-          <div className="flex items-center">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
-              <User className="h-4 w-4" />
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-700">User</p>
-              <p className="text-xs text-gray-500">user@example.com</p>
-            </div>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="flex items-center cursor-pointer hover:bg-gray-100 p-2 rounded-lg">
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
+                  <User className="h-4 w-4" />
+                </div>
+                <div className="ml-3 flex-1">
+                  <p className="text-sm font-medium text-gray-700">{user?.username || 'Guest'}</p>
+                </div>
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="16" 
+                  height="16" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  className="text-gray-400"
+                >
+                  <path d="m6 9 6 6 6-6"/>
+                </svg>
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <Link href="/settings">
+                <DropdownMenuItem>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+              </Link>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </aside>
     </>
